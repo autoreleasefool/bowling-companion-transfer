@@ -20,11 +20,21 @@ let server = http.createServer(function(req, res) {
 
   // Route for uploading file
   if (req.url === '/upload' && req.method.toLowerCase() === 'post') {
+    console.log('Receiving upload request');
     let form = new formidable.IncomingForm();
 
+    form.on('error', function(err) {
+        console.error(err);
+    })
+
     form.parse(req, function(err, fields, files) {
+      console.log(err);
+      console.log(fields);
+      console.log(files);
+      console.log('parsed');
       res.writeHead(200, {'content-type': 'text/plain'});
       res.write('Upload received:\n');
+      res.end();
     });
 
     form.on('end', function(fields, files) {
@@ -50,7 +60,6 @@ let server = http.createServer(function(req, res) {
         });
       });
     });
-    return;
   } else if (req.url === '/' && req.method.toLowerCase() === 'get') {
     /* Display api description page. */
     res.writeHead(200, {'content-type': 'text/html'});
