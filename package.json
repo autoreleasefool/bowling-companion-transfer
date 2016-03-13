@@ -1,0 +1,24 @@
+{
+  "name": "bowling-companion-transfer",
+  "version": "1.0.0",
+  "description": "A web utility for users of the Android app 5 Pin Bowling Companion to transfer their data to a new device.",
+  "main": "server.js",
+  "dependencies": {
+    "formidable": "^1.0.17",
+    "fs-extra": "^0.26.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joseph-roque/bowling-companion-transfer.git"
+  },
+  "author": "Joseph Roque",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/joseph-roque/bowling-companion-transfer/issues"
+  },
+  "homepage": "https://github.com/joseph-roque/bowling-companion-transfer#readme"
+}
