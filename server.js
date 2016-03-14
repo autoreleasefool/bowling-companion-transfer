@@ -35,10 +35,11 @@ let generateId = function() {
 let transferredData = {};
 
 // Job to remove files which have been around longer than 1 hour.
+// Runs once per hour.
 let cleanupCronJob = new cron.CronJob({
   cronTime: '0 0 * * * *',
   onTick: function() {
-    console.log('Running cleanupCronJob at ' + (new Date()));
+    console.log('Running cleanupCronJob on ' + (new Date()));
 
     let currentTime = Date.now();
     for (var key in transferredData) {
@@ -113,7 +114,7 @@ let server = http.createServer(function(req, res) {
       console.log(`Transfer complete. File location: ${temporaryPath}`);
 
       // Location where we want to copy the uploaded file
-      var newLocation = './test';
+      var newLocation = './test/';
 
       // Copy the file to the new location.
       fs.copy(temporaryPath, newLocation + fileName, function(err) {
