@@ -72,11 +72,6 @@ let cleanupCronJob = new cron.CronJob({
           console.error(err);
         } else if (doc !== null) {
           if (doc.time + TRANSFER_TIME_TO_LIVE < currentTime) {
-            if (doc.key in usedKeys) {
-              // Free up the key to be used elsewhere.
-              delete usedKeys[doc.key];
-            }
-
             // This file has expired so remove it.
             fs.remove(doc.location, function(err) {
               if (err) {
@@ -84,6 +79,11 @@ let cleanupCronJob = new cron.CronJob({
                 console.error(err);
               } else {
                 console.log(`Succesfully deleted file ${doc.location}`);
+
+                if (doc.key in usedKeys) {
+                  // Free up the key to be used elsewhere.
+                  delete usedKeys[doc.key];
+                }
               }
             });
 
