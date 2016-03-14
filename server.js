@@ -132,9 +132,8 @@ let server = http.createServer(function(req, res) {
     })
 
     form.parse(req, function(err, fields, files) {
-      console.log(files);
       res.writeHead(200, {'content-type': 'text/plain'});
-      res.write('Upload received.');
+      res.write(`requestId:${requestId}`);
       res.end();
     });
 
