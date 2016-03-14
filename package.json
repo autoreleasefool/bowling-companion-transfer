@@ -4,6 +4,7 @@
   "description": "A web utility for users of the Android app 5 Pin Bowling Companion to transfer their data to a new device.",
   "main": "server.js",
   "dependencies": {
+    "cron": "^1.1.0",
     "formidable": "^1.0.17",
     "fs-extra": "^0.26.5"
   },
