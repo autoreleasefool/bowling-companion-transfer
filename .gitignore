@@ -35,3 +35,6 @@ jspm_packages
 
 # For testing
 test/
+
+# Secret keys
+secret.js
