@@ -14,6 +14,8 @@ const PORT = 8080;
 const TRANSFER_TIME_TO_LIVE = 1000 * 15;
 // Directory to store user data.
 const USER_DATA_LOCATION = './test/';
+// Maximum number of keys and bowler data that can be stored on the server at any time.
+const MAX_KEYS = 40;
 
 let indexHtml = null;
 try {
@@ -189,6 +191,16 @@ let server = http.createServer(function(req, res) {
         });
       });
     });
+  } else if (req.url === '/status' && req.method.toLowerCase() === 'get') {
+    let response = 'OK';
+    if (Object.keys(usedKeys).length > MAX_KEYS) {
+      // If there is too much data stored right now, return "FULL" to let user know they can't transfer right now.
+      response = 'FULL';
+    }
+
+    res.writeHead(200, {'content-type': 'text/html'});
+    res.write(response);
+    res.end();
   } else if (req.url === '/' && req.method.toLowerCase() === 'get') {
     /* Display api description page. */
     res.writeHead(200, {'content-type': 'text/html'});
