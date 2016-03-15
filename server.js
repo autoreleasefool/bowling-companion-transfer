@@ -33,7 +33,7 @@ const MONGO_URL = 'mongodb://localhost:27017/bowlingdata';
 const MONGO_COLLECTION = 'transfers';
 
 // Generate an ID to represent the file uploaded.
-const POSSIBLE_ID_VALUES = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const POSSIBLE_ID_VALUES = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
 let generateId = function() {
   let text = '';
 
