@@ -13,13 +13,13 @@ const PORT = 8080;
 // Amount of time that a transfer will live on the server before being removed.
 const TRANSFER_TIME_TO_LIVE = 1000 * 60 * 60;
 // Directory to store user data.
-const USER_DATA_LOCATION = './test/';
+const USER_DATA_LOCATION = __dirname + '/test/';
 // Maximum number of keys and bowler data that can be stored on the server at any time.
 const MAX_KEYS = 40;
 
 let indexHtml = null;
 try {
-  indexHtml = fs.readFileSync('./index.html');
+  indexHtml = fs.readFileSync(__dirname + '/index.html');
 } catch (err) {
   indexHtml = '<h1>Error loading page.</h1>';
   console.error(err);
@@ -31,6 +31,8 @@ let MongoClient = mongodb.MongoClient;
 const MONGO_URL = 'mongodb://localhost:27017/bowlingdata';
 // Name of the collection that data will be stored in.
 const MONGO_COLLECTION = 'transfers';
+// Regular expression for getting the transfer key from a URL.
+const REGEX_KEY = /\?key=([A-Z0-9]{5})$/;
 
 // Generate an ID to represent the file uploaded.
 const POSSIBLE_ID_VALUES = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
@@ -60,7 +62,7 @@ let cleanupCronJob = new cron.CronJob({
         return;
       }
 
-      console.log('Established database connection.');
+      console.log('CronJob established database connection.');
 
       let currentTime = Date.now();
 
@@ -106,12 +108,73 @@ cleanupCronJob.start();
 
 let server = http.createServer(function(req, res) {
 
-  // Route for uploading file
-  if (req.url === '/upload' && req.method.toLowerCase() === 'post') {
+  if (req.url.startsWith('/valid') && req.method.toLowerCase() === 'get') {
+    // Route for validating key
+    let transfer_key = req.url.match(REGEX_KEY);
+    let response = 'INVALID_KEY';
+    console.log('Validating key:' + JSON.stringify(transfer_key));
+    if (transfer_key.length == 2) {
+      transfer_key = transfer_key[1];
+      if (transfer_key in usedKeys) {
+        response = 'VALID';
+      }
+    }
+
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write(response);
+    res.end();
+  } else if (req.url.startsWith('/download') && req.method.toLowerCase() === 'get') {
+    // Route for getting bowler data
+    let transfer_key = req.url.match(REGEX_KEY);
+    let response = 'INVALID_KEY';
+    console.log('Validating key:' + JSON.stringify(transfer_key));
+    if (transfer_key.length == 2) {
+      transfer_key = transfer_key[1];
+      if (transfer_key in usedKeys) {
+        response = 'VALID';
+      }
+    }
+
+    if (response === 'INVALID_KEY') {
+      res.writeHead(200, {'Content-Type': 'text/plain'});
+      res.write(response);
+      res.end();
+      return;
+    }
+
+    MongoClient.connect(MONGO_URL, function(err, db) {
+      if (err) {
+        console.error('Error establishing database connection.');
+        console.error(err);
+        return;
+      }
+
+      console.log('Download established database connection.');
+
+      let collection = db.collection(MONGO_COLLECTION);
+      collection.findOne({'key': transfer_key}, function(err, item) {
+        if (err) {
+          console.error('Could not retrieve item with key: ' + transfer_key);
+          console.error(err);
+          return;
+        }
+
+        let stat = fs.statSync(USER_DATA_LOCATION + transfer_key);
+        res.writeHead(200, {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': stat.size
+        });
+
+        let stream = fs.createReadStream(USER_DATA_LOCATION + transfer_key, { bufferSize: 32 * 1024 });
+        stream.pipe(res);
+      });
+    });
+  } else if (req.url === '/upload' && req.method.toLowerCase() === 'post') {
+    // Route for uploading file
     console.log('Receiving upload request.');
     if (req.headers.authorization !== secret.transfer_api_key) {
       console.log('Invalid API key:' + req.headers.authorization);
-      res.writeHead(401, {'content-type': 'text/plain'});
+      res.writeHead(401, {'Content-Type': 'text/plain'});
       res.write('Invalid API key.');
       res.end();
       return;
@@ -134,7 +197,7 @@ let server = http.createServer(function(req, res) {
     })
 
     form.parse(req, function(err, fields, files) {
-      res.writeHead(200, {'content-type': 'text/plain'});
+      res.writeHead(200, {'Content-Type': 'text/plain'});
       res.write(`requestId:${requestId}`);
       res.end();
     });
@@ -175,6 +238,8 @@ let server = http.createServer(function(req, res) {
             return;
           }
 
+          console.log('Upload established database connection.');
+
           let collection = db.collection(MONGO_COLLECTION);
           collection.insert({
             key: requestId,
@@ -192,18 +257,19 @@ let server = http.createServer(function(req, res) {
       });
     });
   } else if (req.url === '/status' && req.method.toLowerCase() === 'get') {
+    // Route for checking status of the server
     let response = 'OK';
     if (Object.keys(usedKeys).length > MAX_KEYS) {
       // If there is too much data stored right now, return "FULL" to let user know they can't transfer right now.
       response = 'FULL';
     }
 
-    res.writeHead(200, {'content-type': 'text/html'});
+    res.writeHead(200, {'Content-Type': 'text/plain'});
     res.write(response);
     res.end();
   } else if (req.url === '/' && req.method.toLowerCase() === 'get') {
-    /* Display api description page. */
-    res.writeHead(200, {'content-type': 'text/html'});
+    // Display API description page.
+    res.writeHead(200, {'Content-Type': 'text/html'});
     res.write(indexHtml);
     res.end();
   }
