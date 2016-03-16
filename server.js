@@ -113,7 +113,7 @@ let server = http.createServer(function(req, res) {
     let transfer_key = req.url.match(REGEX_KEY);
     let response = 'INVALID_KEY';
     console.log('Validating key:' + JSON.stringify(transfer_key));
-    if (transfer_key.length == 2) {
+    if (transfer_key !== null && transfer_key.length == 2) {
       transfer_key = transfer_key[1];
       if (transfer_key in usedKeys) {
         response = 'VALID';
