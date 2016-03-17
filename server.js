@@ -13,7 +13,7 @@ const PORT = 8080;
 // Amount of time that a transfer will live on the server before being removed.
 const TRANSFER_TIME_TO_LIVE = 1000 * 60 * 60;
 // Directory to store user data.
-const USER_DATA_LOCATION = __dirname + '/test/';
+const USER_DATA_LOCATION = __dirname + '/user_backups/';
 // Maximum number of keys and bowler data that can be stored on the server at any time.
 const MAX_KEYS = 40;
 
