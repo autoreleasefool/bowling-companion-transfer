@@ -9,6 +9,12 @@ let cron = require('cron');
 let mongodb = require('mongodb');
 let secret = require('./secret');
 
+// Print out startup time to logs
+console.log('--------------------');
+console.log('Starting new instance of server.');
+console.log(new Date());
+console.log('--------------------');
+
 // Port for the server to run on.
 const PORT = 8080;
 // Amount of time that a transfer will live on the server before being removed.
