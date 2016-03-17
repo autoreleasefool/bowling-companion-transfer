@@ -104,6 +104,7 @@ let cleanupCronJob = new cron.CronJob({
   start: false,
   timeZone: 'America/Los_Angeles'
 });
+cleanupCronJob._callbacks[0]();
 cleanupCronJob.start();
 
 let server = http.createServer(function(req, res) {
