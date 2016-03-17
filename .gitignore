@@ -35,6 +35,7 @@ jspm_packages
 
 # For testing
 user_backups/
+user_backups_zipped/
 test/
 
 # Secret keys

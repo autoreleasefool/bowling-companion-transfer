@@ -1,6 +1,7 @@
 'use strict';
 
 // Modules
+let archiver = require('archiver');
 let formidable = require('formidable');
 let http = require('http');
 let fs = require('fs-extra');
@@ -14,6 +15,8 @@ const PORT = 8080;
 const TRANSFER_TIME_TO_LIVE = 1000 * 60 * 60;
 // Directory to store user data.
 const USER_DATA_LOCATION = __dirname + '/user_backups/';
+// Directory to backup zipped copies of user data.
+const USER_BACKUP_LOCATION = __dirname + '/user_backups_zipped/'
 // Maximum number of keys and bowler data that can be stored on the server at any time.
 const MAX_KEYS = 40;
 
@@ -219,6 +222,20 @@ let server = http.createServer(function(req, res) {
         } else {
           let fullName = USER_DATA_LOCATION + fileName;
           console.log(`File copied successfully. File location: ${fullName}`);
+          let outputStream = fs.createWriteStream(USER_BACKUP_LOCATION + fileName + '.zip');
+          let zip = archiver('zip');
+
+          outputStream.on('close', function () {
+            console.log('Zipped file: ' + zip.pointer());
+          });
+
+          zip.on('error', function(err) {
+            console.error('Error zipping data.')
+            console.error(err);
+          });
+
+          zip.pipe(outputStream);
+          zip.file(USER_DATA_LOCATION + fileName, { 'name': fileName }).finalize();
         }
 
         // Delete the old temp file
