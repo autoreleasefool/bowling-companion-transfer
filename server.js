@@ -105,6 +105,7 @@ let cleanupCronJob = new cron.CronJob({
           } else if (!(doc.key in usedKeys)) {
             // Key is still in use, but isn't in used keys for some reason.
             usedKeys[doc.key] = true;
+            console.log('Loaded key from database: ' + doc.key);
           }
         }
       });
