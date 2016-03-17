@@ -9,11 +9,17 @@ let cron = require('cron');
 let mongodb = require('mongodb');
 let secret = require('./secret');
 
-// Print out startup time to logs
+// Print out startup time to default logs
 console.log('--------------------');
 console.log('Starting new instance of server.');
 console.log(new Date());
 console.log('--------------------');
+
+// Print out startup time to error
+console.error('--------------------');
+console.error('Starting new instance of server.');
+console.error(new Date());
+console.error('--------------------');
 
 // Port for the server to run on.
 const PORT = 8080;
