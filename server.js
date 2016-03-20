@@ -98,16 +98,8 @@ let cleanupCronJob = new cron.CronJob({
                 console.error(err);
               } else {
                 console.log(`Succesfully deleted file ${doc.location}`);
-
-                if (doc.key in usedKeys) {
-                  // Free up the key to be used elsewhere.
-                  delete usedKeys[doc.key];
-                }
               }
             });
-
-            // Delete the entry from the database
-            collection.deleteOne({key: doc.key});
           } else if (!(doc.key in usedKeys)) {
             // Key is still in use, but isn't in used keys for some reason.
             usedKeys[doc.key] = true;
