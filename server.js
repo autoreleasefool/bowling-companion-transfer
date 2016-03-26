@@ -1,7 +1,11 @@
 'use strict';
 
+// NOTE: Start mongodb with
+// $ mongod --config /usr/local/etc/mongod.conf
+
 // Modules
 let archiver = require('archiver');
+let dateFormat = require('dateformat');
 let formidable = require('formidable');
 let http = require('http');
 let fs = require('fs-extra');
@@ -60,6 +64,11 @@ let generateId = function() {
   return text;
 };
 
+// Print a message to the error console with the current time
+let logError = function(message) {
+  console.error(dateFormat('yyyy/mm/dd HH:MM:ss') + ': ' + message);
+}
+
 // Dictionary of keys which have already been used as IDs for transfers.
 let usedKeys = {};
 
@@ -72,12 +81,12 @@ let cleanupCronJob = new cron.CronJob({
 
     MongoClient.connect(MONGO_URL, function(err, db) {
       if (err) {
-        console.error('Error establishing database connection.');
-        console.error(err);
+        logError('Error establishing database connection.');
+        logError(err);
         return;
       }
 
-      console.log('CronJob established database connection.');
+      logError('CronJob established database connection.');
 
       let currentTime = Date.now();
 
@@ -87,15 +96,15 @@ let cleanupCronJob = new cron.CronJob({
 
       cursor.each(function(err, doc) {
         if (err) {
-          console.error('Error retrieving documents.');
-          console.error(err);
+          logError('Error retrieving documents.');
+          logError(err);
         } else if (doc !== null) {
           if (doc.time + TRANSFER_TIME_TO_LIVE < currentTime) {
             // This file has expired so remove it.
             fs.remove(doc.location, function(err) {
               if (err) {
-                console.error(`Error removing file ${doc.location}`);
-                console.error(err);
+                logError(`Error removing file ${doc.location}`);
+                logError(err);
               } else {
                 console.log(`Succesfully deleted file ${doc.location}`);
               }
@@ -116,6 +125,10 @@ cleanupCronJob._callbacks[0]();
 cleanupCronJob.start();
 
 let server = http.createServer(function(req, res) {
+
+  console.log('New request on ' + (new Date()));
+  console.log('Request URL: ' + req.url);
+  console.log('Request method: ' + req.method);
 
   if (req.url.startsWith('/valid') && req.method.toLowerCase() === 'get') {
     // Route for validating key
@@ -153,8 +166,8 @@ let server = http.createServer(function(req, res) {
 
     MongoClient.connect(MONGO_URL, function(err, db) {
       if (err) {
-        console.error('Error establishing database connection.');
-        console.error(err);
+        logError('Error establishing database connection.');
+        logError(err);
         return;
       }
 
@@ -163,8 +176,8 @@ let server = http.createServer(function(req, res) {
       let collection = db.collection(MONGO_COLLECTION);
       collection.findOne({'key': transfer_key}, function(err, item) {
         if (err) {
-          console.error('Could not retrieve item with key: ' + transfer_key);
-          console.error(err);
+          logError('Could not retrieve item with key: ' + transfer_key);
+          logError(err);
           return;
         }
 
@@ -201,8 +214,8 @@ let server = http.createServer(function(req, res) {
     let form = new formidable.IncomingForm();
 
     form.on('error', function(err) {
-      console.error('Error receiving file.');
-      console.error(err);
+      logError('Error receiving file.');
+      logError(err);
     })
 
     form.parse(req, function(err, fields, files) {
@@ -222,8 +235,8 @@ let server = http.createServer(function(req, res) {
       // Copy the file to the new location.
       fs.copy(temporaryPath, USER_DATA_LOCATION + fileName, function(err) {
         if (err) {
-          console.error('Error copying file.');
-          console.error(err);
+          logError('Error copying file.');
+          logError(err);
         } else {
           let fullName = USER_DATA_LOCATION + fileName;
           console.log(`File copied successfully. File location: ${fullName}`);
@@ -235,8 +248,8 @@ let server = http.createServer(function(req, res) {
           });
 
           zip.on('error', function(err) {
-            console.error('Error zipping data.')
-            console.error(err);
+            logError('Error zipping data.')
+            logError(err);
           });
 
           zip.pipe(outputStream);
@@ -246,8 +259,8 @@ let server = http.createServer(function(req, res) {
         // Delete the old temp file
         fs.remove(temporaryPath, function(err) {
           if (err) {
-            console.error('Error removing temp file.');
-            console.error(err);
+            logError('Error removing temp file.');
+            logError(err);
           } else {
             console.log('Succesfully deleted temp file.');
           }
@@ -256,8 +269,8 @@ let server = http.createServer(function(req, res) {
         // Store the location of the data in the database.
         MongoClient.connect(MONGO_URL, function(err, db) {
           if (err) {
-            console.error('Error establishing database connection.');
-            console.error(err);
+            logError('Error establishing database connection.');
+            logError(err);
             return;
           }
 
@@ -270,8 +283,8 @@ let server = http.createServer(function(req, res) {
             location: USER_DATA_LOCATION + fileName
           }, function(err, records) {
             if (err) {
-              console.error('Failed to insert record.');
-              console.error(err);
+              logError('Failed to insert record.');
+              logError(err);
             }
 
             db.close();
