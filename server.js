@@ -86,7 +86,7 @@ let cleanupCronJob = new cron.CronJob({
         return;
       }
 
-      logError('CronJob established database connection.');
+      console.log('CronJob established database connection.');
 
       let currentTime = Date.now();
 
