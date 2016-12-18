@@ -6,10 +6,10 @@
   "dependencies": {
     "archiver": "^1.0.0",
     "cron": "^1.1.0",
-    "dateformat": "^1.0.12",
+    "dateformat": "^2.0.0",
     "forever": "^0.15.1",
     "formidable": "^1.0.17",
-    "fs-extra": "^0.30.0",
+    "fs-extra": "^1.0.0",
     "mongodb": "^2.2.4"
   },
   "devDependencies": {},
