@@ -7,12 +7,18 @@
     "archiver": "^1.0.0",
     "cron": "^1.1.0",
     "dateformat": "^2.0.0",
+    "express": "^4.14.0",
     "forever": "^0.15.1",
     "formidable": "^1.0.17",
     "fs-extra": "^1.0.0",
-    "mongodb": "^2.2.4"
+    "mongodb": "^2.2.4",
+    "pug": "^2.0.0-beta6"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^3.12.2",
+    "eslint-config-airbnb-base": "^11.0.0",
+    "eslint-plugin-import": "^2.2.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
