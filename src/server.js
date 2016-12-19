@@ -1,17 +1,31 @@
-'use strict';
+/**
+ *
+ * @license
+ * Copyright (C) 2016 Joseph Roque
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * @author Joseph Roque
+ * @created 2016-12-18
+ * @file server.js
+ * @description Initial script starting point for server.
+ *
+ */
 
-// NOTE: Start mongodb with
-// $ mongod --config /usr/local/etc/mongod.conf
-
-// Modules
-let archiver = require('archiver');
-let dateFormat = require('dateformat');
-let formidable = require('formidable');
-let http = require('http');
-let fs = require('fs-extra');
-let cron = require('cron');
-let mongodb = require('mongodb');
-let secret = require('./secret');
+// Imports
+const express = require('express');
+const http = require('http');
+const path = require('path');
 
 // Print out startup time to default logs
 console.log('--------------------');
@@ -25,8 +39,66 @@ console.error('Starting new instance of server.');
 console.error(new Date());
 console.error('--------------------');
 
-// Port for the server to run on.
-const PORT = 8080;
+// App setup
+const app = express();
+const port = 8080;
+app.set('port', port);
+
+// Create HTTP server
+const server = http.createServer(app);
+server.on('listening', () => {
+  const addr = server.address();
+  const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+  console.log(`Listening on ${bind}`);
+});
+server.on('error', (error) => {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(`${bind} requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(`${bind} is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+});
+server.listen(port);
+
+// Setup routes
+app.use(express.static(path.join(__dirname, 'assets')));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+require('./router')(app);
+
+// Serve favicon
+app.use(require('serve-favicon')(path.join(__dirname, 'assets', 'favicon.ico')));
+
+
+
+
+
+// Modules
+let archiver = require('archiver');
+let dateFormat = require('dateformat');
+let formidable = require('formidable');
+let http = require('http');
+let fs = require('fs-extra');
+let cron = require('cron');
+let mongodb = require('mongodb');
+let secret = require('./secret');
+
+
+
 // Amount of time that a transfer will live on the server before being removed.
 const TRANSFER_TIME_TO_LIVE = 1000 * 60 * 60;
 // Directory to store user data.
