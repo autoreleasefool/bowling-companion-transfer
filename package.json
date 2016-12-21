@@ -1,10 +1,19 @@
 {
   "name": "bowling-companion-transfer",
   "version": "1.0.0",
+  "author": "Joseph Roque",
+  "license": "Apache-2.0",
   "description": "A web utility for users of the Android app 5 Pin Bowling Companion to transfer their data to a new device.",
-  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "nodemon ./src/server.js --exec babel-node",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "archiver": "^1.0.0",
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.21.0",
+    "babel-preset-shopify": "^15.0.1",
     "cron": "^1.1.0",
     "dateformat": "^2.0.0",
     "express": "^4.14.0",
@@ -16,21 +25,23 @@
     "serve-favicon": "^2.3.2"
   },
   "devDependencies": {
-    "eslint": "^3.12.2",
-    "eslint-config-airbnb-base": "^11.0.0",
-    "eslint-plugin-import": "^2.2.0"
+    "eslint": "^3.10.2",
+    "eslint-plugin-shopify": "^15.1.0"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "plugin:shopify/esnext",
+      "plugin:shopify/node"
+    ],
+    "env": {
+      "jquery": true,
+      "browser": true
+    }
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/joseph-roque/bowling-companion-transfer.git"
-  },
-  "author": "Joseph Roque",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/joseph-roque/bowling-companion-transfer/issues"
-  },
-  "homepage": "https://github.com/joseph-roque/bowling-companion-transfer#readme"
+  "babel": {
+    "presets": [
+      "shopify/node"
+    ]
+  }
 }
