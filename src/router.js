@@ -22,12 +22,12 @@
  *
  */
 
-const statusRouter = require('./routes/status');
-const apiRouter = require('./routes/api');
+import applyStatusRouter from './routes/status';
+import applyApiRouter from './routes/api';
 
 export default function setupRoutes(app) {
-  app.use('/', statusRouter);
-  app.use('/', apiRouter);
+  applyStatusRouter(app);
+  // applyApiRouter(app);
 
   // Development error handler
   // Prints stacktrace

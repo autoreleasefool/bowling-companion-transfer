@@ -22,4 +22,20 @@
  *
  */
 
+const router = require('express').Router();
 
+/**
+ * Apply the router to an app, under the '/' directory.
+ */
+export default function applyRouter(app) {
+  app.use('/', router);
+}
+
+/**
+ * GET /, GET /status
+ *
+ * Renders the status page
+ */
+router.get(['/', '/status'], (req, res) => {
+  res.render('status', {title: '5 Pin Bowling Companion | API status'});
+});

@@ -2,5 +2,12 @@ extends layouts/default
 
 block content
 
-  header
+  div(class='mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--no-drawer-button')
+    header(class='mdl-layout__header')
+      div(class='mdl-layout__header-row')
+        img(class='header-image', src='images/pin.png')
+        span(class='mdl-layout-title') 5 Pin Bowling Companion
+        div(class='mdl-layout-spacer')
 
+    main(class='mdl-layout__content')
+      div(class='page-content')
