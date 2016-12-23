@@ -1,4 +1,38 @@
+.page-content {
+  margin: 0 auto;
+  max-width: 60em;
+}
+
+.padded {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
 .header-image {
-  width: 24px;
-  height: 48px;
+  width: auto;
+  height: 75%;
+  margin-right: 16px;
+}
+
+td {
+  white-space: normal;
+  max-width: 50em;
+}
+
+.available {
+  background-color: #bcffdc;
+}
+
+.unavailable {
+  background-color: #ffc6cb;
+}
+
+.api-completed-chip {
+  margin-top: 20px;
+}
+
+#status-table {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 60em;
 }

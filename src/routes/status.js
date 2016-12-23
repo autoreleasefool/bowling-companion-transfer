@@ -22,7 +22,16 @@
  *
  */
 
+import {getDatabaseConnection} from '../db';
+import {logError} from '../util';
+
 const router = require('express').Router();
+
+const availableClass = 'available';
+const unavailableClass = 'unavailable';
+
+const availableText = 'Available';
+const unavailableText = 'Unavailable';
 
 /**
  * Apply the router to an app, under the '/' directory.
@@ -37,5 +46,39 @@ export default function applyRouter(app) {
  * Renders the status page
  */
 router.get(['/', '/status'], (req, res) => {
-  res.render('status', {title: '5 Pin Bowling Companion | API status'});
+  let endpointsAvailableClass = unavailableClass;
+  let endpointsAvailableText = unavailableText;
+
+  let mongoAvailableClass = unavailableClass;
+  let mongoAvailableText = unavailableText;
+
+  getDatabaseConnection()
+    .then((db) => {
+      if (db != null) {
+        mongoAvailableClass = availableClass;
+        mongoAvailableText = availableText;
+      }
+
+      res.render('status', {
+        title: '5 Pin Bowling Companion | API status',
+        endpointsAvailableClass,
+        endpointsAvailableText,
+        mongoAvailableClass,
+        mongoAvailableText,
+        completed: true,
+      });
+      return null;
+    })
+    .catch((err) => {
+      logError('Error determining API status.');
+      logError(err);
+      res.render('status', {
+        title: '5 Pin Bowling Companion | API status',
+        endpointsAvailableClass,
+        endpointsAvailableText,
+        mongoAvailableClass,
+        mongoAvailableText,
+        completed: false,
+      });
+    });
 });

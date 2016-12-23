@@ -10,4 +10,27 @@ block content
         div(class='mdl-layout-spacer')
 
     main(class='mdl-layout__content')
+
       div(class='page-content')
+
+        div(class='padded')
+
+          unless completed
+            .api-completed-chip
+              span(class='mdl-chip mdl-chip--deletable', id='chip-refresh')
+                span(class='mdl-chip__text') The API failed to report all endpoints
+                button(type='button', class='mdl-chip__action')
+                  i(class='material-icons') refresh
+
+          table(class='mdl-data-table mdl-js-data-table mdl-shadow--2dp', id='status-table')
+            thead
+              tr
+                th(class='mdl-data-table__cell--non-numeric wide-cell') Service
+                th Status
+            tbody
+              tr(class=endpointsAvailableClass)
+                td(class='mdl-data-table__cell--non-numeric wide-cell') API Endpoints
+                td= endpointsAvailableText
+              tr(class=mongoAvailableClass)
+                td(class='mdl-data-table__cell--non-numeric wide-cell') MongoDB
+                td= mongoAvailableText
