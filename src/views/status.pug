@@ -22,15 +22,31 @@ block content
                 button(type='button', class='mdl-chip__action')
                   i(class='material-icons') refresh
 
-          table(class='mdl-data-table mdl-js-data-table mdl-shadow--2dp', id='status-table')
-            thead
+          table(class='mdl-data-table mdl-js-data-table mdl-shadow--2dp status-table')
+            thead(class='mdl-color--deep-purple')
               tr
-                th(class='mdl-data-table__cell--non-numeric wide-cell') Service
-                th Status
+                th(class='mdl-data-table__cell--non-numeric white-text') Service
+                th(class='white-text') Status
             tbody
               tr(class=endpointsAvailableClass)
-                td(class='mdl-data-table__cell--non-numeric wide-cell') API Endpoints
+                td(class='mdl-data-table__cell--non-numeric') API Endpoints
                 td= endpointsAvailableText
               tr(class=mongoAvailableClass)
-                td(class='mdl-data-table__cell--non-numeric wide-cell') MongoDB
+                td(class='mdl-data-table__cell--non-numeric') MongoDB
                 td= mongoAvailableText
+              tr(class=cronAvailableClass)
+                td(class='mdl-data-table__cell--non-numeric') Cron
+                td= cronAvailableText
+
+          table(class='mdl-data-table mdl-js-data-table mdl-shadow--2dp status-table')
+            thead(class='mdl-color--deep-purple')
+              tr
+                th(class='mdl-data-table__cell--non-numeric white-text') Cron job
+                th(class='mdl-data-table__cell--non-numeric white-text') Last run
+                th(class='white-text') Runtime
+            tbody
+              each item in cronJobs
+                tr
+                  td(class='mdl-data-table__cell--non-numeric')= item.name
+                  td(class='mdl-data-table__cell--non-numeric')= item.lastStartTime
+                  td= item.lastRunTime

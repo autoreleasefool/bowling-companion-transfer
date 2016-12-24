@@ -19,6 +19,10 @@ td {
   max-width: 50em;
 }
 
+.white-text {
+  color: rgba(255,255,255,0.8) !important;
+}
+
 .available {
   background-color: #bcffdc;
 }
@@ -31,7 +35,7 @@ td {
   margin-top: 20px;
 }
 
-#status-table {
+.status-table {
   margin-top: 20px;
   width: 100%;
   max-width: 60em;
