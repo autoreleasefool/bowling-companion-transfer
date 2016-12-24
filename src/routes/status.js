@@ -22,14 +22,18 @@
  *
  */
 
+import {isApiAvailable} from './api';
+import {getCronStatus} from '../cron';
 import {getDatabaseConnection} from '../db';
 import {logError} from '../util';
 
 const router = require('express').Router();
 
+// Class values for available/unavailable services
 const availableClass = 'available';
 const unavailableClass = 'unavailable';
 
+// Text values for available/unavailable services
 const availableText = 'Available';
 const unavailableText = 'Unavailable';
 
@@ -41,22 +45,41 @@ export default function applyRouter(app) {
 }
 
 /**
- * GET /, GET /status
+ * GET /, GET /api
  *
  * Renders the status page
  */
-router.get(['/', '/status'], (req, res) => {
+router.get(['/', '/api'], (req, res) => {
   let endpointsAvailableClass = unavailableClass;
   let endpointsAvailableText = unavailableText;
 
   let mongoAvailableClass = unavailableClass;
   let mongoAvailableText = unavailableText;
 
+  let cronAvailableClass = unavailableClass;
+  let cronAvailableText = unavailableText;
+  let cronJobs = [];
+
   getDatabaseConnection()
     .then((db) => {
       if (db != null) {
         mongoAvailableClass = availableClass;
         mongoAvailableText = availableText;
+      }
+      return isApiAvailable();
+    })
+    .then((available) => {
+      if (available) {
+        endpointsAvailableClass = availableClass;
+        endpointsAvailableText = availableText;
+      }
+      return getCronStatus();
+    })
+    .then((status) => {
+      if (status != null && Object.keys(status).length > 0) {
+        cronAvailableClass = availableClass;
+        cronAvailableText = availableText;
+        cronJobs = status;
       }
 
       res.render('status', {
@@ -65,6 +88,9 @@ router.get(['/', '/status'], (req, res) => {
         endpointsAvailableText,
         mongoAvailableClass,
         mongoAvailableText,
+        cronAvailableClass,
+        cronAvailableText,
+        cronJobs,
         completed: true,
       });
       return null;
@@ -78,6 +104,9 @@ router.get(['/', '/status'], (req, res) => {
         endpointsAvailableText,
         mongoAvailableClass,
         mongoAvailableText,
+        cronAvailableClass,
+        cronAvailableText,
+        cronJobs,
         completed: false,
       });
     });
