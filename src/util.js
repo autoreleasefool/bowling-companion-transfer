@@ -22,8 +22,13 @@
  *
  */
 
+/* eslint-disable no-console */
+
 // Imports
 const dateFormat = require('dateformat');
+
+// Characters that may appear in IDs
+const POSSIBLE_ID_VALUES = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
 
 /**
  * Print a message to the error console with the current time
@@ -32,4 +37,24 @@ const dateFormat = require('dateformat');
  */
 export function logError(message) {
   console.error(`${dateFormat('yyyy/mm/dd HH:MM:ss')}: ${message}`);
+}
+
+/**
+ * Print a message to the console with the current time
+ */
+export function logMessage(message) {
+  console.log(`${dateFormat('yyyy/mm/dd HH:MM:ss')}: ${message}`);
+}
+
+/**
+ * Generates an random string of numbers and letters
+ *
+ * @param {number} length length of the string to return
+ */
+export function generateId(length) {
+  let text = '';
+  for (let i = 0; i < length; i++) {
+    text += POSSIBLE_ID_VALUES.charAt(Math.floor(Math.random() * POSSIBLE_ID_VALUES.length));
+  }
+  return text;
 }

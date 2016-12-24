@@ -25,29 +25,12 @@
 import applyStatusRouter from './routes/status';
 import applyApiRouter from './routes/api';
 
+/**
+ * Applies routers to an express app
+ *
+ * @param {any} app an express app
+ */
 export default function setupRoutes(app) {
   applyStatusRouter(app);
-  // applyApiRouter(app);
-
-  // Development error handler
-  // Prints stacktrace
-  if (app.get('env') === 'development') {
-    app.use((err, req, res) => {
-      res.status(err.status || 500);
-      res.render('error', {
-        message: err.message,
-        error: err,
-      });
-    });
-  }
-
-  // Production error handler
-  // No stacktraces leaked to user
-  app.use((err, req, res) => {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: {},
-    });
-  });
+  applyApiRouter(app);
 }
