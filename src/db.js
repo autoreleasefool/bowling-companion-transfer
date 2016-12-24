@@ -31,6 +31,12 @@ const MongoClient = mongodb.MongoClient;
 // Local URL of the mongo database.
 const MONGO_URL = 'mongodb://localhost:27017/bowlingdata';
 
+/**
+ * Returns a promise which resolves with a connection to the database, or null
+ * if a connection could not be made.
+ *
+ * @return {Promise<DB>} connection to the database, or null
+ */
 export function getDatabaseConnection() {
   return new Promise((resolve) => {
     MongoClient.connect(MONGO_URL, (err, db) => {
@@ -42,5 +48,56 @@ export function getDatabaseConnection() {
         resolve(db);
       }
     });
+  });
+}
+
+/**
+ * Returns all transfer data in the database.
+ *
+ * @param {DB} db connection to the database
+ * @return {Array<Object>} list of transfer details
+ */
+export function getAllTransferData(db) {
+  return new Promise((resolve, reject) => {
+    db.collection('transfers')
+      .find()
+      .toArray()
+      .then((data) => resolve(data))
+      .catch((err) => reject(err));
+  });
+}
+
+/**
+ * Returns details for a transfer key.
+ *
+ * @param {DB}     db          connection to the database
+ * @param {string} transferKey key to get details for
+ * @return {Object} transfer details
+ */
+export function getTransferData(db, transferKey) {
+  return new Promise((resolve, reject) => {
+    db.collection('transfers')
+      .findOne({key: transferKey})
+      .then((data) => {
+        return resolve(data);
+      })
+      .catch((err) => reject(err));
+  });
+}
+
+/**
+ * Saves transfer data in the database.
+ *
+ * @param {DB}     db           connection to the database
+ * @param {Object} transferData data to store
+ */
+export function saveTransferData(db, transferData) {
+  return new Promise((resolve, reject) => {
+    db.collection('transfers')
+      .insert(transferData)
+      .then((result) => {
+        return resolve(result.insertedCount === 1);
+      })
+      .catch((err) => reject(err));
   });
 }
