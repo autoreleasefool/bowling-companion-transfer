@@ -29,7 +29,7 @@ const cron = require('cron');
 const fs = require('fs-extra');
 
 // Set of cron jobs running
-const cronJobs = {}
+const cronJobs = {};
 
 // How long before a transfer should become invalid
 const TRANSFER_TIME_TO_LIVE = 60 * 60 * 1000;

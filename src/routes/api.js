@@ -142,7 +142,7 @@ router.get('/download', (req, res) => {
         return null;
       }
       database = db;
-      console.log('Download established database connection.');
+      logMessage('Download established database connection.');
       return getTransferData(database, transferKey);
     })
     .then((data) => {
@@ -195,13 +195,13 @@ router.post('/upload', (req, res) => {
     logError(err);
   });
 
-  form.parse(req, (err, fields, files) => {
+  form.parse(req, () => {
     res.set('Content-Type', 'text/plain');
     res.send(`requestId:${requestId}`);
     res.end();
   });
 
-  form.on('end', (fields, files) => {
+  form.on('end', () => {
     // Temporary location for uploaded file
     const tempPath = this.openedFiles[0].path;
     const fileName = requestId;
@@ -216,8 +216,8 @@ router.post('/upload', (req, res) => {
         logError(copyErr);
       } else {
         logMessage(`File copied successfule. Location: ${permPath}`);
-        let outputStream = fs.createWriteStream(`${permPath}.zip`);
-        let zip = archiver('zip');
+        const outputStream = fs.createWriteStream(`${permPath}.zip`);
+        const zip = archiver('zip');
 
         outputStream.on('close', () => {
           logMessage(`Zipped file: ${zip.pointer()}`);
