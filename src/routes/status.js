@@ -76,7 +76,7 @@ router.get(['/', '/api'], (req, res) => {
       return getCronStatus();
     })
     .then((status) => {
-      if (status != null && Object.keys(status).length > 0) {
+      if (status != null && status.length > 0) {
         cronAvailableClass = availableClass;
         cronAvailableText = availableText;
         cronJobs = status;

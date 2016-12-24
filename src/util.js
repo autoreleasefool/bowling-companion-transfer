@@ -47,6 +47,33 @@ export function logMessage(message) {
 }
 
 /**
+ * Formats milliseconds to be a bit prettier.
+ */
+export function formatMilliseconds(ms) {
+  if (ms < 1000) {
+    return `${ms}ms`;
+  } else if (ms < 60 * 1000) {
+    const seconds = Math.floor(ms / 1000);
+    const milliseconds = ms % 1000;
+    return `${seconds}.${milliseconds}s`;
+  } else if (ms < 60 * 60 * 1000) {
+    const minutes = Math.floor(ms / (60 * 1000));
+    const remainder = ms % (60 * 1000);
+    const seconds = Math.floor(remainder / 1000);
+    const milliseconds = remainder % 1000;
+    return `${minutes}:${seconds}.${milliseconds} min`;
+  } else {
+    const hours = Math.floor(ms / (60 * 60 * 1000));
+    let remainder = ms % (60 * 60 * 1000);
+    const minutes = Math.floor(remainder / (60 * 1000));
+    remainder %= (60 * 1000);
+    const seconds = Math.floor(remainder / 1000);
+    const milliseconds = remainder % 1000;
+    return `${hours}h ${minutes}:${seconds}.${milliseconds} min`;
+  }
+}
+
+/**
  * Generates an random string of numbers and letters
  *
  * @param {number} length length of the string to return

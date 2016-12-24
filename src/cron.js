@@ -23,9 +23,10 @@
  */
 
 import {getDatabaseConnection, getAllTransferData} from './db';
-import {logError, logMessage} from './util';
+import {logError, logMessage, formatMilliseconds} from './util';
 
 const cron = require('cron');
+const dateFormat = require('dateformat');
 const fs = require('fs-extra');
 
 // Set of cron jobs running
@@ -119,13 +120,14 @@ export default function setup() {
  * Returns an object containing data about the various cron jobs running.
  */
 export function getCronStatus() {
-  const status = {};
+  const status = [];
   for (const job in cronJobs) {
     if (cronJobs.hasOwnProperty(job)) {
-      status[job] = {
-        lastStartTime: cronJobs[job].lastStartTime,
-        lastRunTime: cronJobs[job].lastRunTime,
-      };
+      status.push({
+        name: job,
+        lastStartTime: dateFormat(new Date(cronJobs[job].lastStartTime), 'yyyy/mm/dd HH:MM:ss'),
+        lastRunTime: formatMilliseconds(cronJobs[job].lastRunTime),
+      });
     }
   }
 
