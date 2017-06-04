@@ -57,12 +57,12 @@ export function getDatabaseConnection() {
  * @param {DB} db connection to the database
  * @return {Array<Object>} list of transfer details
  */
-export function getAllTransferData(db) {
+export function getAllUnremovedTransferData(db) {
   return new Promise((resolve, reject) => {
     db.collection('transfers')
-      .find()
+      .find({ removed: false })
       .toArray()
-      .then((data) => resolve(data))
+      .then((data) => resolve([data, db]))
       .catch((err) => reject(err));
   });
 }

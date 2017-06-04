@@ -22,7 +22,11 @@
  *
  */
 
-import {getDatabaseConnection, getAllTransferData} from './db';
+import {
+  getDatabaseConnection,
+  getAllUnremovedTransferData,
+  saveTransferData,
+} from './db';
 import {logError, logMessage, formatMilliseconds} from './util';
 
 const cron = require('cron');
@@ -54,49 +58,47 @@ function jobFinished(name, startTime) {
 }
 
 // Cron job that runs every hour to clear out transfer data
-function cleanup(name) {
+async function cleanup(name) {
   logMessage(`Running ${name}`);
-
   const currentTime = Date.now();
-  getDatabaseConnection()
-    .then((db) => {
-      if (db == null) {
-        logMessage(`Failed to run ${name}`);
-        return null;
-      }
-      logMessage(`${name} established database connection.`);
 
-      return getAllTransferData(db);
-    })
-    .then((transfers) => {
-      if (transfers == null) {
-        logMessage('Eror retrieving documents.');
-        return null;
-      }
-
-      for (let i = 0; i < transfers.length; i++) {
-        const doc = transfers[i];
-        if (doc != null) {
-          if (doc.time + TRANSFER_TIME_TO_LIVE < currentTime) {
-            fs.remove(doc.location, (removeErr) => {
-              if (removeErr) {
-                logError(`Error removing file ${doc.location}`);
-                logError(removeErr);
-              } else {
-                logMessage(`Successfully deleted file ${doc.location}`);
-              }
-            });
-          }
-        }
-      }
-
-      jobFinished(name, currentTime);
+  const cleanupTransfer = async (transfer) => {
+    if (transfer == null || transfer.time + TRANSFER_TIME_TO_LIVE < currentTime) {
       return null;
-    })
-    .catch((err) => {
-      logError(`Error running ${name}`);
-      logError(err);
+    }
+
+    try {
+      await fs.remove(transfer.location);
+      logMessage(`Successfully deleted file ${transfer.location}`);
+      return transfer;
+    } catch (removeErr) {
+      logError(`Error removing file ${transfer.location}`);
+      logError(removeErr);
+      return null;
+    }
+  };
+
+  try {
+    const db = getDatabaseConnection();
+    const transfers = getAllUnremovedTransferData(db);
+    const cleanupResults = await Promise.all(transfers.map((transfer) => {
+      return cleanupTransfer(transfer);
+    }));
+
+    cleanupResults.forEach(async (transfer) => {
+      if (transfer == null) {
+        return;
+      }
+
+      transfer.removed = true;
+      await saveTransferData(db, transfer);
     });
+
+    jobFinished(name, currentTime);
+  } catch (err) {
+    logError(`Error running ${name}`);
+    logError(err);
+  }
 }
 
 /**

@@ -255,6 +255,7 @@ router.post('/upload', (req, res) => {
               key: requestId,
               time: Date.now(),
               location: permPath,
+              removed: false,
             });
           })
           .then((success) => {
