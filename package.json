@@ -20,7 +20,7 @@
     "express": "^4.14.0",
     "forever": "^0.15.1",
     "formidable": "^1.0.17",
-    "fs-extra": "^1.0.0",
+    "fs-extra": "^3.0.1",
     "mongodb": "^2.2.4",
     "nodemon": "^1.11.0",
     "pug": "^2.0.0-beta6",
