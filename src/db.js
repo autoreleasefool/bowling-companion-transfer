@@ -38,12 +38,12 @@ const MONGO_URL = 'mongodb://localhost:27017/bowlingdata';
  * @return {Promise<DB>} connection to the database, or null
  */
 export function getDatabaseConnection() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     MongoClient.connect(MONGO_URL, (err, db) => {
       if (err) {
         logError('Error establishing database connection.');
         logError(err);
-        resolve(null);
+        reject();
       } else {
         resolve(db);
       }
@@ -54,15 +54,16 @@ export function getDatabaseConnection() {
 /**
  * Returns all transfer data in the database.
  *
- * @param {DB} db connection to the database
+ * @param {DB}      db      connection to the database
+ * @param {boolean} removed true for only removed transfers, false for only transfers not removed, null for all
  * @return {Array<Object>} list of transfer details
  */
-export function getAllUnremovedTransferData(db) {
+export function getAllTransferData(db, removed) {
   return new Promise((resolve, reject) => {
     db.collection('transfers')
-      .find({ removed: false })
+      .find(removed == null ? {} : {removed})
       .toArray()
-      .then((data) => resolve([data, db]))
+      .then((data) => resolve(data))
       .catch((err) => reject(err));
   });
 }

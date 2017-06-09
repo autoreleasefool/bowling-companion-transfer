@@ -22,9 +22,10 @@
  *
  */
 
+import { updateActiveKeys } from './routes/api';
 import {
   getDatabaseConnection,
-  getAllUnremovedTransferData,
+  getAllTransferData,
   saveTransferData,
 } from './db';
 import {logError, logMessage, formatMilliseconds} from './util';
@@ -37,7 +38,7 @@ const fs = require('fs-extra');
 const cronJobs = {};
 
 // How long before a transfer should become invalid
-const TRANSFER_TIME_TO_LIVE = 60 * 60 * 1000;
+const TRANSFER_TIME_TO_LIVE = 60 * 60;
 
 /**
  * Starts a cron job and adds it to the active cron jobs.
@@ -78,9 +79,10 @@ async function cleanup(name) {
     }
   };
 
+  let db = null;
   try {
-    const db = getDatabaseConnection();
-    const transfers = getAllUnremovedTransferData(db);
+    db = await getDatabaseConnection();
+    const transfers = await getAllTransferData(db, false);
     const cleanupResults = await Promise.all(transfers.map((transfer) => {
       return cleanupTransfer(transfer);
     }));
@@ -94,10 +96,15 @@ async function cleanup(name) {
       await saveTransferData(db, transfer);
     });
 
+    updateActiveKeys();
     jobFinished(name, currentTime);
   } catch (err) {
     logError(`Error running ${name}`);
     logError(err);
+  }
+
+  if (db) {
+    db.close();
   }
 }
 

@@ -22,7 +22,7 @@
  *
  */
 
-import {getDatabaseConnection, getTransferData, saveTransferData} from '../db';
+import {getDatabaseConnection, getAllTransferData, getTransferData, saveTransferData} from '../db';
 import {generateId, logError, logMessage} from '../util';
 import {transferApiKey, serverUrl} from '../secret';
 
@@ -37,13 +37,48 @@ const router = require('express').Router();
 const activeKeys = {};
 
 // Where user data should be stored
-const USER_DATA_LOCATION = path.join(__dirname, 'user_backups');
+const USER_DATA_LOCATION = path.join(path.dirname(require.main.filename), '../user_backups');
 
 /**
  * Apply the router to an app, under the '/' directory.
  */
 export default function applyRouter(app) {
   app.use('/', router);
+  loadActiveKeys();
+}
+
+/**
+ * Refreshes the active keys and removes those which are no longer active.
+ */
+export async function updateActiveKeys() {
+  try {
+    const db = await getDatabaseConnection();
+    const transfers = await getAllTransferData(db, true);
+    transfers.forEach((transfer) => {
+      if (transfer.key in activeKeys) {
+        activeKeys[transfer.key] = false;
+        console.log(`Removed inactive key: ${transfer.key}`);
+      }
+    });
+  } catch (err) {
+    console.error('Could not update active keys.', err);
+  }
+}
+
+/**
+ * Loads the transfer keys which are still valid in the database.
+ */
+async function loadActiveKeys() {
+  try {
+    const db = await getDatabaseConnection();
+    const transfers = await getAllTransferData(db, false);
+    transfers.forEach((transfer) => {
+      activeKeys[transfer.key] = true;
+      console.log(`Loaded key: ${transfer.key}`);
+    });
+  } catch (err) {
+    console.error('Could not load active keys.', err);
+  }
 }
 
 /**
@@ -106,12 +141,13 @@ router.get('/status', (req, res) => {
  * Validates a key.
  */
 router.get('/valid', (req, res) => {
-  const transferKey = req.params.key;
+  const transferKey = req.query.key;
   let response = 'INVALID_KEY';
   logMessage(`Validating key: ${JSON.stringify(transferKey)}`);
   if (transferKey != null && transferKey in activeKeys) {
     response = 'VALID';
   }
+  console.log(response);
   res.set('Content-Type', 'text/plain');
   res.send(response);
 });
@@ -121,8 +157,8 @@ router.get('/valid', (req, res) => {
  *
  * Streams a user's data, corresponding to the provided key
  */
-router.get('/download', (req, res) => {
-  const transferKey = req.params.key;
+router.get('/download', async (req, res) => {
+  const transferKey = req.query.key;
   let response = 'INVALID_KEY';
   logMessage(`Validating key: ${JSON.stringify(transferKey)}`);
   if (transferKey != null && transferKey in activeKeys) {
@@ -135,34 +171,26 @@ router.get('/download', (req, res) => {
     return;
   }
 
-  let database = null;
-  getDatabaseConnection()
-    .then((db) => {
-      if (db == null) {
-        return null;
-      }
-      database = db;
-      logMessage('Download established database connection.');
-      return getTransferData(database, transferKey);
-    })
-    .then((data) => {
-      database.close();
-      if (data == null) {
-        res.set('Content-Type', 'text/plain');
-        res.send('INVALID_KEY');
-        return null;
-      }
+  try {
+    const db = await getDatabaseConnection();
+    logMessage('Download established database connection.');
 
-      const stat = fs.statSync(data.location);
-      res.set('Content-Type', 'application/octet-stream');
-      res.set('Content-Length', stat.size);
-      const stream = fs.createReadStream(data.location, {bufferSize: 32 * 1024});
-      stream.pipe(res);
-      return null;
-    })
-    .catch((err) => {
-      logError(err);
-    });
+    const data = await getTransferData(db, transferKey);
+    db.close();
+    if (data == null) {
+      res.set('Content-Type', 'text/plain');
+      res.send('INVALID_KEY');
+      return;
+    }
+
+    const stat = fs.statSync(data.location);
+    res.set('Content-Type', 'application/octet-stream');
+    res.set('Content-Length', stat.size);
+    const stream = fs.createReadStream(data.location, {bufferSize: 32 * 1024});
+    stream.pipe(res);
+  } catch (err) {
+    logError(err);
+  }
 });
 
 /**
@@ -195,13 +223,9 @@ router.post('/upload', (req, res) => {
     logError(err);
   });
 
-  form.parse(req, () => {
-    res.set('Content-Type', 'text/plain');
-    res.send(`requestId:${requestId}`);
-    res.end();
-  });
+  form.parse(req, () => {});
 
-  form.on('end', () => {
+  form.on('end', async function() {
     // Temporary location for uploaded file
     const tempPath = this.openedFiles[0].path;
     const fileName = requestId;
@@ -209,67 +233,58 @@ router.post('/upload', (req, res) => {
 
     logMessage(`Transfer complete. File location: ${tempPath}`);
 
-    // Copy the file to a new location
-    fs.copy(tempPath, permPath, (copyErr) => {
-      if (copyErr) {
-        logError('Error copying file.');
-        logError(copyErr);
-      } else {
-        logMessage(`File copied successfule. Location: ${permPath}`);
-        const outputStream = fs.createWriteStream(`${permPath}.zip`);
-        const zip = archiver('zip');
+    const completeUpload = async () => {
+      try {
+        await fs.remove(tempPath);
+        logMessage(`Successfully deleted temp file ${tempPath}`);
 
-        outputStream.on('close', () => {
-          logMessage(`Zipped file: ${zip.pointer()}`);
+        const db = await getDatabaseConnection();
+        const saveSuccess = await saveTransferData(db, {
+          key: requestId,
+          time: Date.now(),
+          location: permPath,
+          removed: false,
         });
 
-        zip.on('error', (zipErr) => {
-          logError('Error zipping data.');
-          logError(zipErr);
-        });
-
-        zip.pipe(outputStream);
-        zip.file(permPath, {name: fileName}).finalize();
-      }
-
-      // Delete the temp file
-      fs.remove(tempPath, (removeErr) => {
-        if (removeErr) {
-          logError('Error removing temp file.');
-          logError(removeErr);
+        if (saveSuccess) {
+          res.set('Content-Type', 'text/plain');
+          res.send(`requestId:${requestId}`);
+          res.end();
         } else {
-          logMessage(`Successfully deleted temp file ${tempPath}`);
+          throw new Error('Failed to save to database.');
         }
 
-        // Save the data to the database
-        let database = null;
-        getDatabaseConnection()
-          .then((db) => {
-            if (db == null) {
-              return null;
-            }
-            database = db;
+      } catch (err) {
+        logError('Error resolving upload.');
+        logError(err);
 
-            logMessage('Upload established database connection.');
-            return saveTransferData(database, {
-              key: requestId,
-              time: Date.now(),
-              location: permPath,
-              removed: false,
-            });
-          })
-          .then((success) => {
-            database.close();
-            if (!success) {
-              logError('Failed to insert record.');
-            }
-            return null;
-          })
-          .catch((err) => {
-            logError('Failed to insert record.');
-            logError(err);
-          });
+        res.status(500);
+        res.end();
+      }
+    };
+
+    try {
+      await fs.copy(tempPath, permPath);
+      logMessage(`File copied successfuly. Location: ${permPath}`);
+      const outputStream = fs.createWriteStream(`${permPath}.zip`);
+      const zip = archiver('zip');
+
+      outputStream.on('close', () => {
+        logMessage(`Zipped file: ${zip.pointer()}`);
+        completeUpload();
       });
-    });
+
+      zip.on('error', (zipErr) => {
+        logError('Error zipping data.');
+        logError(zipErr);
+      });
+
+      zip.pipe(outputStream);
+      zip.file(permPath, {name: fileName});
+      zip.finalize();
+    } catch (err) {
+      logError('Error during upload.');
+      logError(err);
+    }
   });
 });
