@@ -35,8 +35,13 @@ const POSSIBLE_ID_VALUES = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
  *
  * @param {string} message the message to display
  */
-export function logError(message) {
-  console.error(`${dateFormat('yyyy/mm/dd HH:MM:ss')}: ${message}`);
+export function logError(message, err) {
+  const errMessage = `${dateFormat('yyyy/mm/dd HH:MM:ss')}: ${message}`;
+  if (err) {
+    console.error(errMessage, err);
+  } else {
+    console.error(errMessage);
+  }
 }
 
 /**

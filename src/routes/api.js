@@ -55,13 +55,15 @@ export async function updateActiveKeys() {
     const db = await getDatabaseConnection();
     const transfers = await getAllTransferData(db, true);
     transfers.forEach((transfer) => {
-      if (transfer.key in activeKeys) {
-        activeKeys[transfer.key] = false;
-        console.log(`Removed inactive key: ${transfer.key}`);
+      if (!(transfer.key in activeKeys)) {
+        return;
       }
+
+      activeKeys[transfer.key] = false;
+      logMessage(`Removed inactive key: ${transfer.key}`);
     });
   } catch (err) {
-    console.error('Could not update active keys.', err);
+    logError('Could not update active keys.', err);
   }
 }
 
@@ -76,7 +78,7 @@ async function loadActiveKeys() {
       activeKeys[transfer.key] = true;
     });
   } catch (err) {
-    console.error('Could not load active keys.', err);
+    logError('Could not load active keys.', err);
   }
 }
 
@@ -222,17 +224,26 @@ router.post('/upload', (req, res) => {
     logError(err);
   });
 
-  form.parse(req, () => {});
+  form.parse(req, () => {
+    // Empty function required for parsing, for some reason
+  });
 
   form.on('end', async function() {
     // Temporary location for uploaded file
+
+    /* eslint-disable babel/no-invalid-this */
+    /* `this` comes from context where callback is called from, only way to access openedFiles. */
+
     const tempPath = this.openedFiles[0].path;
+
+    /* eslint-enable babel/no-invalid-this */
+
     const fileName = requestId;
     const permPath = path.join(USER_DATA_LOCATION, fileName);
 
     logMessage(`Transfer complete. File location: ${tempPath}`);
 
-    const completeUpload = async () => {
+    async function completeUpload() {
       try {
         await fs.remove(tempPath);
         logMessage(`Successfully deleted temp file ${tempPath}`);
@@ -260,7 +271,7 @@ router.post('/upload', (req, res) => {
         res.status(500);
         res.end();
       }
-    };
+    }
 
     try {
       await fs.copy(tempPath, permPath);

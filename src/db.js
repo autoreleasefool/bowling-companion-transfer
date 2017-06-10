@@ -112,7 +112,7 @@ export function saveTransferData(db, transferData) {
 export function updateTransferData(db, transferData) {
   return new Promise((resolve, reject) => {
     db.collection('transfers')
-      .updateOne({_id: transferData._id}, {$set:{...transferData}})
+      .updateOne({_id: transferData._id}, {$set: {...transferData}})
       .then((result) => {
         return resolve(result.insertedCount === 1);
       })
