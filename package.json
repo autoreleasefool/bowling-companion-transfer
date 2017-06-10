@@ -6,7 +6,10 @@
   "description": "A web utility for users of the Android app 5 Pin Bowling Companion to transfer their data to a new device.",
   "private": true,
   "scripts": {
-    "start": "nodemon ./src/server.js --exec babel-node",
+    "build": "babel src -d build -D",
+    "start:prod": "node ./build/server.js >out.log 2>err.log",
+    "start:dev": "node ./build/server.js",
+    "start": "npm run start:dev",
     "lint": "eslint ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
