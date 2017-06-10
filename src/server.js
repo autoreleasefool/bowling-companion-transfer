@@ -52,6 +52,12 @@ const app = express();
 const port = 8080;
 app.set('port', port);
 
+// Log each request made to the server
+app.use((req, res, next) => {
+  logMessage(`${req.method} from ${req.ip}: ${req.originalUrl}`);
+  next();
+});
+
 // Create HTTP server
 const server = http.createServer(app);
 server.on('listening', () => {

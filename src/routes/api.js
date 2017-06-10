@@ -74,7 +74,6 @@ async function loadActiveKeys() {
     const transfers = await getAllTransferData(db, false);
     transfers.forEach((transfer) => {
       activeKeys[transfer.key] = true;
-      console.log(`Loaded key: ${transfer.key}`);
     });
   } catch (err) {
     console.error('Could not load active keys.', err);
@@ -147,7 +146,6 @@ router.get('/valid', (req, res) => {
   if (transferKey != null && transferKey in activeKeys) {
     response = 'VALID';
   }
-  console.log(response);
   res.set('Content-Type', 'text/plain');
   res.send(response);
 });
@@ -188,6 +186,7 @@ router.get('/download', async (req, res) => {
     res.set('Content-Length', stat.size);
     const stream = fs.createReadStream(data.location, {bufferSize: 32 * 1024});
     stream.pipe(res);
+    logMessage(`Successfully fulfilled request for ${transferKey}`);
   } catch (err) {
     logError(err);
   }
