@@ -14,19 +14,18 @@ Ensure MongoDB is running by starting it with
 $ mongod --config /usr/local/etc/mongod.conf
 ```
 
-Start the server with
+Build and start the server with
 
 ```
-$ ./script/start
+$ npm run build
+$ npm run start:dev
 ```
 
 Make your changes and view them at `http://localhost:8080`
 
-When finished, stop the server with
-```
-$ ./script/stop
-```
+## Screenshots
 
+![Status](screenshots/status.png)
 
 ## License
 
