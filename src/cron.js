@@ -22,11 +22,11 @@
  *
  */
 
-import { updateActiveKeys } from './routes/api';
+import {updateActiveKeys} from './routes/api';
 import {
   getDatabaseConnection,
   getAllTransferData,
-  saveTransferData,
+  updateTransferData,
 } from './db';
 import {logError, logMessage, formatMilliseconds} from './util';
 
@@ -38,33 +38,44 @@ const fs = require('fs-extra');
 const cronJobs = {};
 
 // How long before a transfer should become invalid
-const TRANSFER_TIME_TO_LIVE = 60 * 60;
+const TRANSFER_TIME_TO_LIVE = 60 * 60 * 1000;
+
+/**
+ * Creates a cron job and adds it to the active jobs.
+ */
+function createJob(name, job) {
+  cronJobs[name] = job;
+  job.job._callbacks[0]();
+  job.job.start();
+}
 
 /**
  * Starts a cron job and adds it to the active cron jobs.
  */
-function initializeJob(name, cronJob) {
-  cronJobs[name] = cronJob;
-  cronJob.job._callbacks[0]();
-  cronJob.job.start();
+function initializeJob(name) {
+  logMessage(`Running job ${name}`);
+  cronJobs[name].lastStartTime = Date.now();
+  cronJobs[name].lastRunTime = 0;
 }
 
 /**
  * Callback for when a cron job finishes to update stats.
  */
-function jobFinished(name, startTime) {
-  logMessage(`Finished running job ${name}`);
-  cronJobs[name].lastStartTime = startTime;
-  cronJobs[name].lastRunTime = Date.now() - startTime;
+function jobFinished(name) {
+  const runTime = Date.now() - cronJobs[name].lastStartTime;
+  logMessage(`Finished running job ${name} in ${runTime}ms`);
+  cronJobs[name].lastRunTime = runTime;
 }
 
-// Cron job that runs every hour to clear out transfer data
-async function cleanup(name) {
-  logMessage(`Running ${name}`);
+/**
+ * Cron job that runs every hour to clear out transfer data
+ */
+async function cleanup() {
+  initializeJob('cleanup');
   const currentTime = Date.now();
 
-  const cleanupTransfer = async (transfer) => {
-    if (transfer == null || transfer.time + TRANSFER_TIME_TO_LIVE < currentTime) {
+  async function cleanupTransfer(transfer) {
+    if (transfer == null || transfer.time + TRANSFER_TIME_TO_LIVE > currentTime) {
       return null;
     }
 
@@ -77,7 +88,7 @@ async function cleanup(name) {
       logError(removeErr);
       return null;
     }
-  };
+  }
 
   let db = null;
   try {
@@ -93,19 +104,20 @@ async function cleanup(name) {
       }
 
       transfer.removed = true;
-      await saveTransferData(db, transfer);
+      await updateTransferData(db, transfer);
     });
 
     updateActiveKeys();
-    jobFinished(name, currentTime);
   } catch (err) {
-    logError(`Error running ${name}`);
+    logError('Error running cleanup');
     logError(err);
   }
 
   if (db) {
     db.close();
   }
+
+  jobFinished('cleanup');
 }
 
 /**
@@ -115,14 +127,15 @@ export default function setup() {
   const cleanupJob = {
     job: new cron.CronJob({
       cronTime: '0 0 * * * *',
-      onTick: cleanup.bind(this, 'cleanup'),
+      onTick: () => cleanup(),
       start: false,
       timeZone: 'America/New_York',
     }),
     lastStartTime: null,
     lastRunTime: null,
   };
-  initializeJob('cleanup', cleanupJob);
+
+  createJob('cleanup', cleanupJob);
 }
 
 /**

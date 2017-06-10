@@ -29,7 +29,7 @@ const mongodb = require('mongodb');
 // MongoDB
 const MongoClient = mongodb.MongoClient;
 // Local URL of the mongo database.
-const MONGO_URL = 'mongodb://localhost:27017/bowlingdata';
+const MONGO_URL = 'mongodb://localhost:27017/bowling_companion';
 
 /**
  * Returns a promise which resolves with a connection to the database, or null
@@ -102,3 +102,21 @@ export function saveTransferData(db, transferData) {
       .catch((err) => reject(err));
   });
 }
+
+/**
+ * Updates transfer data in the database.
+ *
+ * @param {DB}     db           connection to the database
+ * @param {Object} transferData data to update
+ */
+export function updateTransferData(db, transferData) {
+  return new Promise((resolve, reject) => {
+    db.collection('transfers')
+      .updateOne({_id: transferData._id}, {$set:{...transferData}})
+      .then((result) => {
+        return resolve(result.insertedCount === 1);
+      })
+      .catch((err) => reject(err));
+  });
+}
+
