@@ -7,9 +7,9 @@
   "private": true,
   "scripts": {
     "build": "babel src -d build -D",
-    "start:prod": "node ./build/server.js >out.log 2>err.log",
+    "start:prod": "node ./build/server.js >logs/out.log 2>logs/err.log",
     "start:dev": "node ./build/server.js",
-    "start": "npm run start:dev",
+    "start": "npm run start:prod",
     "lint": "eslint ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
