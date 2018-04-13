@@ -113,10 +113,6 @@ async function cleanup() {
     logError(err);
   }
 
-  if (db) {
-    db.close();
-  }
-
   jobFinished('cleanup');
 }
 

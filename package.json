@@ -7,31 +7,31 @@
   "private": true,
   "scripts": {
     "build": "babel src -d build -D",
-    "start:prod": "node ./build/server.js >logs/out.log 2>logs/err.log",
-    "start:dev": "node ./build/server.js",
+    "start:prod": "yarn build && node ./build/server.js >logs/out.log 2>logs/err.log",
+    "start:dev": "yarn build && node ./build/server.js",
     "start": "npm run start:prod",
     "lint": "eslint ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "archiver": "^1.0.0",
-    "babel-cli": "^6.18.0",
-    "babel-core": "^6.25.0",
-    "babel-preset-shopify": "^16.1.0",
-    "cron": "^1.1.0",
-    "dateformat": "^2.0.0",
-    "express": "^4.14.0",
-    "forever": "^0.15.1",
-    "formidable": "^1.0.17",
-    "fs-extra": "^3.0.1",
-    "mongodb": "^2.2.4",
-    "nodemon": "^1.11.0",
-    "pug": "^2.0.0-beta6",
-    "serve-favicon": "^2.3.2"
+    "archiver": "^2.1.1",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-shopify": "^16.3.0",
+    "cron": "^1.3.0",
+    "dateformat": "^3.0.3",
+    "express": "^4.16.3",
+    "forever": "^0.15.3",
+    "formidable": "^1.2.1",
+    "fs-extra": "^5.0.0",
+    "mongodb": "^3.0.6",
+    "nodemon": "^1.17.3",
+    "pug": "^2.0.3",
+    "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
-    "eslint": "^3.10.2",
-    "eslint-plugin-shopify": "^16.0.1"
+    "eslint": "^4.19.1",
+    "eslint-plugin-shopify": "^20.0.0"
   },
   "eslintConfig": {
     "root": true,

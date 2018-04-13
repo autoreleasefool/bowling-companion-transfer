@@ -65,7 +65,6 @@ router.get(['/', '/api'], (req, res) => {
       if (db != null) {
         mongoAvailableClass = availableClass;
         mongoAvailableText = availableText;
-        db.close();
       }
       return isApiAvailable();
     })

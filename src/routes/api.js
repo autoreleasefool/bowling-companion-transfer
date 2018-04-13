@@ -176,7 +176,6 @@ router.get('/download', async (req, res) => {
     logMessage('Download established database connection.');
 
     const data = await getTransferData(db, transferKey);
-    db.close();
     if (data == null) {
       res.set('Content-Type', 'text/plain');
       res.send('INVALID_KEY');

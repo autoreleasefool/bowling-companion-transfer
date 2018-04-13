@@ -37,18 +37,15 @@ const MONGO_URL = 'mongodb://localhost:27017/bowling_companion';
  *
  * @return {Promise<DB>} connection to the database, or null
  */
-export function getDatabaseConnection() {
-  return new Promise((resolve, reject) => {
-    MongoClient.connect(MONGO_URL, (err, db) => {
-      if (err) {
-        logError('Error establishing database connection.');
-        logError(err);
-        reject();
-      } else {
-        resolve(db);
-      }
-    });
-  });
+export async function getDatabaseConnection() {
+  try {
+    let client = await MongoClient.connect(MONGO_URL);
+    return await client.db();
+  } catch (ex) {
+    logError('Error establishing database connection.');
+    logError(ex);
+    throw ex;
+  }
 }
 
 /**
@@ -59,13 +56,9 @@ export function getDatabaseConnection() {
  * @return {Array<Object>} list of transfer details
  */
 export function getAllTransferData(db, removed) {
-  return new Promise((resolve, reject) => {
-    db.collection('transfers')
+  return db.collection('transfers')
       .find(removed == null ? {} : {removed})
-      .toArray()
-      .then((data) => resolve(data))
-      .catch((err) => reject(err));
-  });
+      .toArray();
 }
 
 /**
@@ -76,14 +69,8 @@ export function getAllTransferData(db, removed) {
  * @return {Object} transfer details
  */
 export function getTransferData(db, transferKey) {
-  return new Promise((resolve, reject) => {
-    db.collection('transfers')
-      .findOne({key: transferKey})
-      .then((data) => {
-        return resolve(data);
-      })
-      .catch((err) => reject(err));
-  });
+  return db.collection('transfers')
+      .findOne({key: transferKey});
 }
 
 /**
@@ -93,14 +80,11 @@ export function getTransferData(db, transferKey) {
  * @param {Object} transferData data to store
  */
 export function saveTransferData(db, transferData) {
-  return new Promise((resolve, reject) => {
-    db.collection('transfers')
+  return db.collection('transfers')
       .insert(transferData)
       .then((result) => {
         return resolve(result.insertedCount === 1);
-      })
-      .catch((err) => reject(err));
-  });
+      });
 }
 
 /**
@@ -110,13 +94,10 @@ export function saveTransferData(db, transferData) {
  * @param {Object} transferData data to update
  */
 export function updateTransferData(db, transferData) {
-  return new Promise((resolve, reject) => {
     db.collection('transfers')
       .updateOne({_id: transferData._id}, {$set: {...transferData}})
       .then((result) => {
         return resolve(result.insertedCount === 1);
-      })
-      .catch((err) => reject(err));
-  });
+      });
 }
 
