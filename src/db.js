@@ -55,7 +55,7 @@ export async function getDatabaseConnection() {
  * @param {boolean} removed true for only removed transfers, false for only transfers not removed, null for all
  * @return {Array<Object>} list of transfer details
  */
-export function getAllTransferData(db, removed) {
+export async function getAllTransferData(db, removed) {
   return db.collection('transfers')
       .find(removed == null ? {} : {removed})
       .toArray();
@@ -68,7 +68,7 @@ export function getAllTransferData(db, removed) {
  * @param {string} transferKey key to get details for
  * @return {Object} transfer details
  */
-export function getTransferData(db, transferKey) {
+export async function getTransferData(db, transferKey) {
   return db.collection('transfers')
       .findOne({key: transferKey});
 }
@@ -79,11 +79,11 @@ export function getTransferData(db, transferKey) {
  * @param {DB}     db           connection to the database
  * @param {Object} transferData data to store
  */
-export function saveTransferData(db, transferData) {
+export async function saveTransferData(db, transferData) {
   return db.collection('transfers')
       .insert(transferData)
       .then((result) => {
-        return resolve(result.insertedCount === 1);
+        return result.insertedCount === 1;
       });
 }
 
@@ -93,11 +93,11 @@ export function saveTransferData(db, transferData) {
  * @param {DB}     db           connection to the database
  * @param {Object} transferData data to update
  */
-export function updateTransferData(db, transferData) {
+export async function updateTransferData(db, transferData) {
     db.collection('transfers')
       .updateOne({_id: transferData._id}, {$set: {...transferData}})
       .then((result) => {
-        return resolve(result.insertedCount === 1);
+        return result.insertedCount === 1;
       });
 }
 
