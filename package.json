@@ -7,6 +7,8 @@
   "private": true,
   "scripts": {
     "build": "babel src -d build -D",
+    "forever": "./script/start",
+    "stop": "./script/stop",
     "start:prod": "yarn build && node ./build/server.js >logs/out.log 2>logs/err.log",
     "start:dev": "yarn build && node ./build/server.js",
     "start": "npm run start:prod",
