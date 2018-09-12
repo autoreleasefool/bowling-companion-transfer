@@ -17,11 +17,17 @@ $ mongod --config /usr/local/etc/mongod.conf
 Build and start the server with
 
 ```
-$ yarn run build
-$ yarn run start:dev
+$ yarn build
+$ yarn start:dev
 ```
 
 Make your changes and view them at `http://localhost:8080`
+
+Before committing, ensure your changes pass linting:
+
+```
+yarn lint
+```
 
 ## Screenshots
 

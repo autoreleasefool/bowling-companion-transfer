@@ -39,7 +39,7 @@ const MONGO_URL = 'mongodb://localhost:27017/bowling_companion';
  */
 export async function getDatabaseConnection() {
   try {
-    let client = await MongoClient.connect(MONGO_URL);
+    const client = await MongoClient.connect(MONGO_URL);
     return await client.db();
   } catch (ex) {
     logError('Error establishing database connection.');
@@ -57,8 +57,8 @@ export async function getDatabaseConnection() {
  */
 export async function getAllTransferData(db, removed) {
   return db.collection('transfers')
-      .find(removed == null ? {} : {removed})
-      .toArray();
+    .find(removed == null ? {} : {removed})
+    .toArray();
 }
 
 /**
@@ -70,7 +70,7 @@ export async function getAllTransferData(db, removed) {
  */
 export async function getTransferData(db, transferKey) {
   return db.collection('transfers')
-      .findOne({key: transferKey});
+    .findOne({key: transferKey});
 }
 
 /**
@@ -81,10 +81,10 @@ export async function getTransferData(db, transferKey) {
  */
 export async function saveTransferData(db, transferData) {
   return db.collection('transfers')
-      .insert(transferData)
-      .then((result) => {
-        return result.insertedCount === 1;
-      });
+    .insert(transferData)
+    .then((result) => {
+      return result.insertedCount === 1;
+    });
 }
 
 /**
@@ -94,10 +94,10 @@ export async function saveTransferData(db, transferData) {
  * @param {Object} transferData data to update
  */
 export async function updateTransferData(db, transferData) {
-    db.collection('transfers')
-      .updateOne({_id: transferData._id}, {$set: {...transferData}})
-      .then((result) => {
-        return result.insertedCount === 1;
-      });
+  db.collection('transfers')
+    .updateOne({_id: transferData._id}, {$set: {...transferData}})
+    .then((result) => {
+      return result.insertedCount === 1;
+    });
 }
 

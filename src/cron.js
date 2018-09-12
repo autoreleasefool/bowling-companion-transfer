@@ -19,7 +19,6 @@
  * @created 2016-12-24
  * @file cron.js
  * @description Creates cron jobs
- *
  */
 
 import {updateActiveKeys} from './routes/api';
