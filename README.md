@@ -17,8 +17,8 @@ $ mongod --config /usr/local/etc/mongod.conf
 Build and start the server with
 
 ```
-$ npm run build
-$ npm run start:dev
+$ yarn run build
+$ yarn run start:dev
 ```
 
 Make your changes and view them at `http://localhost:8080`
@@ -30,7 +30,7 @@ Make your changes and view them at `http://localhost:8080`
 ## License
 
 ```
-Copyright (C) 2016 Joseph Roque
+Copyright (C) 2016-2018 Joseph Roque
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
