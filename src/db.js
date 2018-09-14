@@ -39,7 +39,7 @@ const MONGO_URL = 'mongodb://localhost:27017/bowling_companion';
  */
 export async function getDatabaseConnection() {
   try {
-    const client = await MongoClient.connect(MONGO_URL);
+    const client = await MongoClient.connect(MONGO_URL, {useNewUrlParser: true});
     return await client.db();
   } catch (ex) {
     logError('Error establishing database connection.');
@@ -81,7 +81,7 @@ export async function getTransferData(db, transferKey) {
  */
 export async function saveTransferData(db, transferData) {
   return db.collection('transfers')
-    .insert(transferData)
+    .insertOne(transferData)
     .then((result) => {
       return result.insertedCount === 1;
     });
