@@ -11,14 +11,14 @@ Visit [api.bowlingcompanion.ca](http://api.bowlingcompanion.ca) for status of th
 Ensure MongoDB is running by starting it with
 
 ```
-$ mongod --config /usr/local/etc/mongod.conf
+mongod --config /usr/local/etc/mongod.conf
 ```
 
 Build and start the server with
 
 ```
-$ yarn build
-$ yarn start:dev
+yarn build
+yarn start:dev
 ```
 
 Make your changes and view them at `http://localhost:8080`
