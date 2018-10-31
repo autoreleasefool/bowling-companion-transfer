@@ -60,54 +60,53 @@ router.get(['/', '/api'], (req, res) => {
   let cronAvailableText = unavailableText;
   let cronJobs = [];
 
-  getDatabaseConnection()
+  const dbPromise = getDatabaseConnection()
     .then((db) => {
       if (db != null) {
         mongoAvailableClass = availableClass;
         mongoAvailableText = availableText;
       }
-      return isApiAvailable();
-    })
+    }).catch((err) => {
+      logError('Error determining DB status.');
+      logError(err);
+      mongoAvailableClass = unavailableClass
+      mongoAvailableText = unavailableText
+    });
+
+  const apiPromise = isApiAvailable()
     .then((available) => {
       if (available) {
         endpointsAvailableClass = availableClass;
         endpointsAvailableText = availableText;
       }
-      return getCronStatus();
-    })
-    .then((status) => {
-      if (status != null && status.length > 0) {
-        cronAvailableClass = availableClass;
-        cronAvailableText = availableText;
-        cronJobs = status;
-      }
-
-      res.render('status', {
-        title: '5 Pin Bowling Companion | API status',
-        endpointsAvailableClass,
-        endpointsAvailableText,
-        mongoAvailableClass,
-        mongoAvailableText,
-        cronAvailableClass,
-        cronAvailableText,
-        cronJobs,
-        completed: true,
-      });
-      return null;
     })
     .catch((err) => {
       logError('Error determining API status.');
       logError(err);
-      res.render('status', {
-        title: '5 Pin Bowling Companion | API status',
-        endpointsAvailableClass,
-        endpointsAvailableText,
-        mongoAvailableClass,
-        mongoAvailableText,
-        cronAvailableClass,
-        cronAvailableText,
-        cronJobs,
-        completed: false,
-      });
+      endpointsAvailableClass = unavailableClass;
+      endpointsAvailableText = unavailableText;
+    })
+
+  cronAvailableClass = availableClass;
+  cronAvailableText = availableText;
+  cronJobs = getCronStatus();
+
+  const render = () => {
+    res.render('status', {
+      title: '5 Pin Bowling Companion | API status',
+      endpointsAvailableClass,
+      endpointsAvailableText,
+      mongoAvailableClass,
+      mongoAvailableText,
+      cronAvailableClass,
+      cronAvailableText,
+      cronJobs,
+      completed: true,
     });
+    return null;
+  }
+
+  Promise.all([dbPromise, apiPromise])
+    .then(render)
+    .catch(render)
 });
