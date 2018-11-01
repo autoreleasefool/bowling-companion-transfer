@@ -45,11 +45,11 @@ export default function applyRouter(app) {
 }
 
 /**
- * GET /, GET /api
+ * GET /
  *
  * Renders the status page
  */
-router.get(['/', '/api'], (req, res) => {
+router.get(['/'], (req, res) => {
   let endpointsAvailableClass = unavailableClass;
   let endpointsAvailableText = unavailableText;
 
@@ -67,10 +67,9 @@ router.get(['/', '/api'], (req, res) => {
         mongoAvailableText = availableText;
       }
     }).catch((err) => {
-      logError('Error determining DB status.');
-      logError(err);
-      mongoAvailableClass = unavailableClass
-      mongoAvailableText = unavailableText
+      logError('Error determining DB status.', err);
+      mongoAvailableClass = unavailableClass;
+      mongoAvailableText = unavailableText;
     });
 
   const apiPromise = isApiAvailable()
@@ -81,8 +80,7 @@ router.get(['/', '/api'], (req, res) => {
       }
     })
     .catch((err) => {
-      logError('Error determining API status.');
-      logError(err);
+      logError('Error determining API status.', err);
       endpointsAvailableClass = unavailableClass;
       endpointsAvailableText = unavailableText;
     })
@@ -103,10 +101,48 @@ router.get(['/', '/api'], (req, res) => {
       cronJobs,
       completed: true,
     });
-    return null;
-  }
+  };
 
   Promise.all([dbPromise, apiPromise])
     .then(render)
-    .catch(render)
+    .catch(render);
+});
+
+/**
+ * GET /api
+ *
+ * Gets the API status and sends a JSON response.
+ */
+router.get(['/api'], (req, res) => {
+  let dbStatus = false;
+  let apiStatus = false;
+  let cronStatus = false;
+
+  const dbPromise = getDatabaseConnection()
+    .then((db) => dbStatus = (db != null))
+    .catch((err) => {
+      logError('Error getting database connection', err);
+      dbStatus = false;
+    });
+
+  const apiPromise = isApiAvailable()
+    .then((available) => apiStatus = available)
+    .catch((err) => {
+      logError('Error getting API status', err);
+      apiStatus = false
+    });
+
+  cronStatus = getCronStatus().length > 0
+
+  const render = () => {
+    res.json([
+      { name: 'API Endpoints', status: apiStatus },
+      { name: 'MongoDB', status: dbStatus },
+      { name: 'Cron', status: cronStatus },
+    ]);
+  };
+
+  Promise.all([dbPromise, apiPromise])
+    .then(render)
+    .catch(render);
 });
