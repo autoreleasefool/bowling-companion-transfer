@@ -24,12 +24,13 @@
 
 import {getDatabaseConnection, getAllTransferData, getTransferData, saveTransferData} from '../db';
 import {generateId, logError, logMessage} from '../util';
-import {transferApiKey, serverUrl} from '../secret';
+import {isHTTPS, transferApiKey, serverUrl} from '../secret';
 
 const archiver = require('archiver');
 const formidable = require('formidable');
 const fs = require('fs-extra');
 const http = require('http');
+const https = require('https');
 const path = require('path');
 const router = require('express').Router();
 
@@ -87,7 +88,8 @@ async function loadActiveKeys() {
  */
 export function isApiAvailable() {
   return new Promise((resolve) => {
-    http.get(`${serverUrl}/status`, (response) => {
+    const requester = isHTTPS ? https : http
+    requester.get(`${serverUrl}/status`, (response) => {
       const statusCode = response.statusCode;
       const contentType = response.headers['content-type'];
 

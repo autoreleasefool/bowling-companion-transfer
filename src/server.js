@@ -26,8 +26,11 @@
 import applyRouters from './router';
 import startCronJob from './cron';
 import {logError, logMessage} from './util';
+import {isHTTPS, sslCertificateLocation, sslKeyLocation} from './secret';
 
 const express = require('express');
+const fs = require('fs');
+const https = require('https');
 const http = require('http');
 const path = require('path');
 
@@ -49,7 +52,7 @@ console.error('--------------------');
 
 // App setup
 const app = express();
-const port = 8080;
+const port = isHTTPS ? 8443 : 8080;
 app.set('port', port);
 
 // Log each request made to the server
@@ -58,11 +61,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// Set up credentials for HTTPS server
+var options = isHTTPS ? {
+  key: fs.readFileSync(sslKeyLocation).toString(),
+  cert: fs.readFileSync(sslCertificateLocation).toString(),
+} : {};
+
 // Create HTTP server
-const server = http.createServer(app);
+const server = isHTTPS ? https.createServer(options, app) : http.createServer(app);
 server.on('listening', () => {
   const addr = server.address();
   const bind = typeof addr === 'string' ? `pipe ${addr}` : `port ${addr.port}`;
+  logMessage(`HTTPS is ${isHTTPS ? 'enabled' : 'disabled'}`);
   logMessage(`Listening on ${bind}`);
 });
 server.on('error', (error) => {
