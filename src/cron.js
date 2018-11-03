@@ -108,11 +108,24 @@ async function cleanup() {
 
     updateActiveKeys();
   } catch (err) {
-    logError('Error running cleanup');
-    logError(err);
+    logError('Error running cleanup', err);
   }
 
   jobFinished('cleanup');
+}
+
+async function resetDB() {
+  initializeJob('resetDB');
+
+  try {
+    await getDatabaseConnection();
+  } catch (err) {
+    logError("Error getting database connection, restarting DB", err);
+    const childProcess = require('child_process');
+    childProcess.execSync('mongod --dbpath ~/.mongodb/data --logpath ~/.mongodb/mongod.log --fork');
+  }
+
+  jobFinished('resetDB');
 }
 
 /**
@@ -130,7 +143,19 @@ export default function setup() {
     lastRunTime: null,
   };
 
+  const resetDBJob = {
+    job: new cron.CronJob({
+      cronTime: '0 5 * * *',
+      onTick: () => resetDB(),
+      start: false,
+      timeZone: 'America/New_York',
+    }),
+    lastStartTime: null,
+    lastRunTime: null,
+  };
+
   createJob('cleanup', cleanupJob);
+  createJob('resetDB', resetDBJob);
 }
 
 /**
