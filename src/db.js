@@ -30,6 +30,8 @@ const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 // Local URL of the mongo database.
 const MONGO_URL = 'mongodb://localhost:27017/bowling_companion';
+// Open database connection
+let databaseConnection = null;
 
 /**
  * Returns a promise which resolves with a connection to the database, or null
@@ -38,9 +40,14 @@ const MONGO_URL = 'mongodb://localhost:27017/bowling_companion';
  * @return {Promise<DB>} connection to the database, or null
  */
 export async function getDatabaseConnection() {
+  if (databaseConnection != null) {
+    return databaseConnection
+  }
+
   try {
     const client = await MongoClient.connect(MONGO_URL, {useNewUrlParser: true});
-    return await client.db();
+    databaseConnection = await client.db();
+    return databaseConnection;
   } catch (ex) {
     logError('Error establishing database connection.');
     logError(ex);
