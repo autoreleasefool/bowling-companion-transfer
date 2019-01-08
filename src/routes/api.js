@@ -23,8 +23,8 @@
  */
 
 import {getDatabaseConnection, getAllTransferData, getTransferData, saveTransferData} from '../db';
-import {generateId, logError, logMessage} from '../util';
-import {isHTTPS, transferApiKey, transferSSLApiKey, serverUrl} from '../secret';
+import {generateId, logError, logMessage, isValidAuthenticationKey} from '../util';
+import {isHTTPS, serverUrl} from '../secret';
 
 const archiver = require('archiver');
 const formidable = require('formidable');
@@ -203,7 +203,7 @@ router.get('/download', async (req, res) => {
 router.post('/upload', (req, res) => {
   logMessage('Receiving upload request.');
   let apiKey = isHTTPS ? transferSSLApiKey : transferApiKey;
-  if (req.headers.authorization !== apiKey) {
+  if (!isValidAuthenticationKey(req.headers.authorization)) {
     logMessage(`Invalid API key: ${req.headers.authorization}`);
     res.status(401);
     res.set('Content-Type', 'text/plain');

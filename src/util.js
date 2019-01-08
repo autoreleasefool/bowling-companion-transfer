@@ -26,9 +26,23 @@
 
 // Imports
 const dateFormat = require('dateformat');
+import {isHTTPS, transferApiKey, transferSSLApiKey} from './secret';
 
 // Characters that may appear in IDs
 const POSSIBLE_ID_VALUES = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+
+/**
+ * Returns true if the key used is valid for authentication, false otherwise.
+ *
+ * @param {string} key the key used for authentication
+ */
+export function isValidAuthenticationKey(key) {
+  if (isHTTPS) {
+    return key === transferSSLApiKey;
+  } else {
+    return key === transferApiKey;
+  }
+}
 
 /**
  * Print a message to the error console with the current time
