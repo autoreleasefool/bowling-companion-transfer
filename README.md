@@ -1,5 +1,9 @@
 # Bowling Companion Transfer
 
+## This repository has been archived
+
+Use of the `Bowling Companion Transfer` service is no longer required since the Bowling Companion added manual data import and export in version `3.2.0` in August 2020.
+
 ## Description
 
 A web utility to allow users of [5 Pin Bowling Companion](https://play.google.com/store/apps/details?id=ca.josephroque.bowlingcompanion) for Android to transfer their data to a new device.
